@@ -45,7 +45,7 @@ jobs:
         run: Build/Scripts/runTests.sh -s cglGit -n -p 7.4
 
   unit_tests:
-    name: TYPO3 v10.4 PHP 7.2
+    name: Unit Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
