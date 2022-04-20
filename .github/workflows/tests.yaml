@@ -80,10 +80,10 @@ jobs:
       - name: Install dependencies
         run: composer require typo3/cms-core:^${{ matrix.TYPO3 }} --prefer-dist --no-progress
 
-      - name: TYPO3 {{ matrix.TYPO3 }} PHP ${{ matrix.php }} Unit
+      - name: TYPO3 ${{ matrix.TYPO3 }} PHP ${{ matrix.php }} Unit
         run: Build/Scripts/runTests.sh -s unit -p ${{ matrix.php }}
 
-      - name: TYPO3 {{ matrix.TYPO3 }} PHP ${{ matrix.php }} Unit Deprecated
+      - name: TYPO3 ${{ matrix.TYPO3 }} PHP ${{ matrix.php }} Unit Deprecated
         run: Build/Scripts/runTests.sh -s unitDeprecated -p ${{ matrix.php }}
 
   PHPStan:
