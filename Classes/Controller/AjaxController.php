@@ -44,6 +44,7 @@ use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
+use TYPO3\CMS\Core\Imaging\IconRegistry;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
@@ -416,7 +417,7 @@ class AjaxController
                 'label' => $element->label,
                 'translatedLabel' => $translatedLabel !== '' ? $translatedLabel : $element->label,
                 'shortLabel' => $element->shortLabel,
-                'iconMarkup' => $this->iconFactory->getIcon('mask-ce-' . $element->key, Icon::SIZE_DEFAULT, $overlay)->render(),
+                'iconMarkup' => $this->iconFactory->getIcon($element->getIconIdentifier(), Icon::SIZE_DEFAULT, $overlay)->render(),
                 'templateExists' => $this->contentElementTemplateExists($element->key) ? 1 : 0,
                 'hidden' => $element->hidden ? 1 : 0,
                 'count' => $this->getElementCount($element->key),
@@ -642,7 +643,42 @@ class AjaxController
                 return 'fa-' . $item;
             }, $values);
         }
-        return new JsonResponse($icons);
+
+        $iconRegistry = GeneralUtility::makeInstance(IconRegistry::class);
+        $iconFactory = GeneralUtility::makeInstance(IconFactory::class);
+        $registeredIcons = $iconRegistry->getAllRegisteredIconIdentifiers();
+        $markups = [];
+        foreach ($registeredIcons as $registeredIcon) {
+            if (strpos($registeredIcon, 'tcarecords-') === 0) {
+                // those get registered by the tca ctrl/iconfile entry.
+                // Seems they don't work quite well, so we skip those for now.
+                continue;
+            }
+            $conf = $iconRegistry->getIconConfigurationByIdentifier($registeredIcon);
+            if (!isset($conf['options']['source']) || !is_string($conf['options']['source'])) {
+                continue;
+            }
+            $source = $conf['options']['source'];
+            if (preg_match('@^EXT:(\w+)[\\\/]@', $source, $match)) {
+                $extKey = $match[1];
+                // leave out mask
+                if ($extKey === 'mask') {
+                    continue;
+                }
+
+                // leave out core extensions for now
+                $path = GeneralUtility::getFileAbsFileName('EXT:' . $extKey . '/');
+                if (strpos($path, 'typo3conf/ext/' . $extKey) === false) {
+                    continue;
+                }
+
+                $iconGroup = 'EXT:' . $extKey;
+                $icons[$iconGroup] = $icons[$iconGroup] ?? [];
+                $icons[$iconGroup][] = $registeredIcon;
+                $markups[$registeredIcon] = $iconFactory->getIcon($registeredIcon, Icon::SIZE_SMALL)->render();
+            }
+        }
+        return new JsonResponse(['icons' => $icons, 'markups' => $markups]);
     }
 
     public function existingTca(ServerRequestInterface $request): Response

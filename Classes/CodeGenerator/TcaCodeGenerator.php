@@ -186,7 +186,7 @@ class TcaCodeGenerator
                 [
                     $label,
                     $cTypeKey,
-                    'mask-ce-' . $element->key,
+                    $element->getIconIdentifier(),
                     'mask',
                 ]
             );
@@ -194,7 +194,7 @@ class TcaCodeGenerator
             // Add all the fields that should be shown
             [$prependTabs, $fields] = $this->generateShowItem($prependTabs, $element->key, 'tt_content');
 
-            $GLOBALS['TCA']['tt_content']['ctrl']['typeicon_classes'][$cTypeKey] = 'mask-ce-' . $element->key;
+            $GLOBALS['TCA']['tt_content']['ctrl']['typeicon_classes'][$cTypeKey] = $element->getIconIdentifier();
             $elementTca = $this->tableDefinitionCollection->loadElement('tt_content', $element->key);
 
             // Check if the element uses the core bodytext field, and it is of type richtext.

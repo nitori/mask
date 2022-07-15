@@ -24,6 +24,7 @@ use MASK\Mask\Imaging\IconProvider\ContentElementIconProvider;
 use MASK\Mask\Utility\AffixUtility;
 use MASK\Mask\Utility\ArrayToTypoScriptConverter;
 use MASK\Mask\Utility\TemplatePathUtility;
+use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 use TYPO3\CMS\Core\Imaging\IconRegistry;
 
 /**
@@ -71,17 +72,19 @@ class TyposcriptCodeGenerator
         $tt_content = $this->tableDefinitionCollection->getTable('tt_content');
         foreach ($tt_content->elements as $element) {
             // Register icons for contentelements
-            $iconIdentifier = 'mask-ce-' . $element->key;
-            $this->iconRegistry->registerIcon(
-                $iconIdentifier,
-                ContentElementIconProvider::class,
-                [
-                    'key' => $element->key,
-                    'label' => $element->label,
-                    'icon' => $element->icon,
-                    'color' => $element->color,
-                ]
-            );
+            $iconIdentifier = $element->getIconIdentifier();
+            if (!$this->iconRegistry->isRegistered($iconIdentifier)) {
+                $this->iconRegistry->registerIcon(
+                    $iconIdentifier,
+                    ContentElementIconProvider::class,
+                    [
+                        'key' => $element->key,
+                        'label' => $element->label,
+                        'icon' => $element->icon,
+                        'color' => $element->color,
+                    ]
+                );
+            }
 
             if ($element->hidden) {
                 continue;
@@ -110,19 +113,21 @@ class TyposcriptCodeGenerator
             // @todo add a configuration for custom icons, instead of magically
             // @todo detect them by name.
             if ($element->iconOverlay !== '') {
-                $iconOverlayIdentifier = 'mask-ce-' . $element->key . '-overlay';
-                $this->iconRegistry->registerIcon(
-                    $iconOverlayIdentifier,
-                    ContentElementIconProvider::class,
-                    [
-                        // @todo '_overlay' added to not conflict with the main icon.
-                        // @todo will only work right now, if a FontAwesome icon is selected. See comment above.
-                        'key' => $element->key . '_overlay',
-                        'label' => $element->label,
-                        'icon' => $element->iconOverlay,
-                        'color' => $element->colorOverlay,
-                    ]
-                );
+                $iconOverlayIdentifier = $element->getIconOverlayIdentifier();
+                if (!$this->iconRegistry->isRegistered($iconOverlayIdentifier)) {
+                    $this->iconRegistry->registerIcon(
+                        $iconOverlayIdentifier,
+                        ContentElementIconProvider::class,
+                        [
+                            // @todo '_overlay' added to not conflict with the main icon.
+                            // @todo will only work right now, if a FontAwesome icon is selected. See comment above.
+                            'key' => $element->key . '_overlay',
+                            'label' => $element->label,
+                            'icon' => $element->iconOverlay,
+                            'color' => $element->colorOverlay,
+                        ]
+                    );
+                }
                 $wizard['elements.' . $cTypeKey]['iconOverlay'] = $iconOverlayIdentifier;
             }
 

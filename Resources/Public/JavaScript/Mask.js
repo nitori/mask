@@ -75,6 +75,7 @@ define([
         language: [],
         icons: {},
         faIcons: {},
+        typo3IconMarkups: {},
         availableTca: {},
         multiUseElements: {},
         optionalExtensionStatus: {},
@@ -278,7 +279,9 @@ define([
               promises.push((new AjaxRequest(TYPO3.settings.ajaxUrls.mask_icons)).get()
                 .then(
                   async response => {
-                    this.faIcons = await response.resolve();
+                    let icons = await response.resolve();
+                    this.faIcons = icons.icons;
+                    this.typo3IconMarkups = icons.markups;
                   }
                 ));
 

@@ -20,7 +20,9 @@ namespace MASK\Mask\Imaging\IconProvider;
 use MASK\Mask\Imaging\PreviewIconResolver;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Imaging\Icon;
+use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconProviderInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ContentElementIconProvider implements IconProviderInterface
 {
@@ -49,11 +51,11 @@ class ContentElementIconProvider implements IconProviderInterface
     {
         $styles = [];
         $previewIconAvailable = $this->previewIconResolver->isPreviewIconAvailable($options['key']);
-        $fontAwesomeKeyAvailable = trim($options['icon']) !== '';
+        $iconAvailable = trim($options['icon']) !== '';
 
         // decide what kind of icon to render
         $color = $this->getColor($options['color']);
-        if ($fontAwesomeKeyAvailable && !$previewIconAvailable) {
+        if ($iconAvailable && !$previewIconAvailable) {
             if ($color !== '') {
                 $styles[] = 'color: #' . $color;
             }
@@ -61,7 +63,18 @@ class ContentElementIconProvider implements IconProviderInterface
             if (empty($styles)) {
                 return '<span class="icon-unify" ><i class="fa fa-' . htmlspecialchars($this->getFontAwesomeKey($options['color'])) . '"></i></span>';
             }
-            return '<span class="icon-unify" style="' . implode('; ', $styles) . '"><i class="fa fa-' . htmlspecialchars($this->getFontAwesomeKey($options['icon'])) . '"></i></span>';
+            if (strpos($options['icon'], 'fa-') === 0) {
+                $iconMarkup = '<i class="fa fa-' . htmlspecialchars($this->getFontAwesomeKey($options['icon'])) . '"></i>';
+            } else {
+                try {
+                    $iconMarkup = GeneralUtility::makeInstance(IconFactory::class)
+                        ->getIcon($options['icon'])
+                        ->render('inline');
+                } catch (\Exception $e) {
+                    $iconMarkup = '';
+                }
+            }
+            return '<span class="icon-unify" style="' . implode('; ', $styles) . '">' . $iconMarkup . '</span>';
         }
 
         if ($previewIconAvailable) {

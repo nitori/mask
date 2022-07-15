@@ -11,6 +11,7 @@ define([
               element: Object,
               label: String,
               faIcons: Object,
+              typo3IconMarkups: Object,
               property: String,
             },
             data() {
@@ -20,7 +21,16 @@ define([
             },
             mounted() {
               const iconPicker = $(this.$refs['meta-icon-' + this.property]).fontIconPicker({
-                source: this.faIcons
+                source: this.faIcons,
+                iconGenerator: ( icon ) => {
+                  if (icon.substring(0, 3) === 'fa-') {
+                      return '<i class="fa ' + icon + '"></i>';
+                  }
+                  if (this.typo3IconMarkups.hasOwnProperty(icon)) {
+                      return this.typo3IconMarkups[icon];
+                  }
+                  return '<i class="' + icon + '"></i>';
+                }
               });
               iconPicker.setIcon(this.element[this.property]);
               this.iconPicker = $(iconPicker[0]).data('fontIconPicker');

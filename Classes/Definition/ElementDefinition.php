@@ -157,4 +157,22 @@ final class ElementDefinition
 
         return $element;
     }
+
+    public function getIconIdentifier(): string
+    {
+        if (!empty($this->icon) && strpos($this->icon, 'fa-') !== 0) {
+            return $this->icon;
+        } else {
+            return 'mask-ce-' . $this->key;
+        }
+    }
+
+    public function getIconOverlayIdentifier(): string
+    {
+        if (!empty($this->iconOverlay) && strpos($this->iconOverlay, 'fa-') !== 0) {
+            return $this->iconOverlay;
+        } else {
+            return 'mask-ce-' . $this->key . '-overlay';
+        }
+    }
 }
